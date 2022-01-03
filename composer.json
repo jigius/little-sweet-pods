@@ -1,0 +1,19 @@
+{
+    "name": "jigius/little-sweet-pods",
+    "description": "A scaffold for entities that have been persisted via using Repository pattern",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Jigius\\LittleSweetPods\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "jigius",
+            "email": "jigius@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
