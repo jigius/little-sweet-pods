@@ -1,6 +1,6 @@
 <?php
 
-namespace Jigius\LittleSweetPods\App\Pods\Book\Persistence\Db;
+namespace Jigius\LittleSweetPods\App\Pods\Book\Persistence\Pdo;
 
 use DateTimeInterface;
 use Jigius\LittleSweetPods\App\Pods\Book as Vanilla;
@@ -13,7 +13,7 @@ use DateTimeZone;
 use Exception;
 
 /**
- * Book-entity with persistence capable
+ * Book-entity with persistence into Db capable
  */
 final class EntBook implements EntityInterface
 {
@@ -45,7 +45,7 @@ final class EntBook implements EntityInterface
 	/**
 	 * @inheritDoc
 	 */
-	public function withId(int $id): Vanilla\EntityInterface
+	public function withId(int $id): self
 	{
 		$that = $this->blueprinted();
 		$that->original = $this->original->withId($id);
@@ -63,7 +63,7 @@ final class EntBook implements EntityInterface
 	/**
 	 * @inheritDoc
 	 */
-	public function withIsbn(string $isbn): Vanilla\EntityInterface
+	public function withIsbn(string $isbn): self
 	{
 		$that = $this->blueprinted();
 		$that->original = $this->original->withIsbn($isbn);
@@ -81,7 +81,7 @@ final class EntBook implements EntityInterface
 	/**
 	 * @inheritDoc
 	 */
-	public function withTitle(string $title): Vanilla\EntityInterface
+	public function withTitle(string $title): self
 	{
 		$that = $this->blueprinted();
 		$that->original = $this->original->withTitle($title);
@@ -99,7 +99,7 @@ final class EntBook implements EntityInterface
 	/**
 	 * @inheritDoc
 	 */
-	public function withPublished(DateTimeInterface $pub): Vanilla\EntityInterface
+	public function withPublished(DateTimeInterface $pub): self
 	{
 		$that = $this->blueprinted();
 		$that->original = $this->original->withPublished($pub);
@@ -117,7 +117,7 @@ final class EntBook implements EntityInterface
 	/**
 	 * @inheritDoc
 	 */
-	public function withLanguage(Language\LanguageInterface $lang): Vanilla\EntityInterface
+	public function withLanguage(Language\EntityInterface $lang): self
 	{
 		$that = $this->blueprinted();
 		$that->original = $this->original->withLanguage($lang);
@@ -153,7 +153,7 @@ final class EntBook implements EntityInterface
 	/**
 	 * @inheritDoc
 	 */
-	public function withCreated(DateTimeInterface $dt): EntityInterface
+	public function withCreated(DateTimeInterface $dt): self
 	{
 		$that = $this->blueprinted();
 		$that->i['created'] = $dt;
@@ -163,7 +163,7 @@ final class EntBook implements EntityInterface
 	/**
 	 * @inheritDoc
 	 */
-	public function withChanged(DateTimeInterface $dt): EntityInterface
+	public function withChanged(DateTimeInterface $dt): self
 	{
 		$that = $this->blueprinted();
 		$that->i['changed'] = $dt;
@@ -173,7 +173,7 @@ final class EntBook implements EntityInterface
 	/**
 	 * @inheritDoc
 	 */
-	public function withPersisted(bool $flag): EntityInterface
+	public function withPersisted(bool $flag): self
 	{
 		$that = $this->blueprinted();
 		$that->i['persisted'] = $flag;

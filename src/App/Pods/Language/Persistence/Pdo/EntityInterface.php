@@ -1,8 +1,8 @@
 <?php
 
-namespace Jigius\LittleSweetPods\App\Pods\Book\Persistence\Db;
+namespace Jigius\LittleSweetPods\App\Pods\Language\Persistence\Pdo;
 
-use Jigius\LittleSweetPods\App\Pods\Book as Vanilla;
+use Jigius\LittleSweetPods\App\Pods\Language as Vanilla;
 use DateTimeInterface;
 
 /**
@@ -27,4 +27,16 @@ interface EntityInterface extends Vanilla\EntityInterface
 	 * @return EntityInterface
 	 */
 	public function withPersisted(bool $flag): EntityInterface;
+
+	/**
+	 * @inheritDoc
+	 * @return EntityInterface
+	 */
+	public function withId(int $id): EntityInterface;
+
+	/**
+	 * @inheritDoc
+	 * @return EntityInterface
+	 */
+	public function withName(string $name): EntityInterface;
 }

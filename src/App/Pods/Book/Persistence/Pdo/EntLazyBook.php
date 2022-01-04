@@ -1,19 +1,21 @@
 <?php
 
-namespace Jigius\LittleSweetPods\App\Pods\Book\Persistence\Db;
+namespace Jigius\LittleSweetPods\App\Pods\Book\Persistence\Pdo;
 
 use DateTimeInterface;
 use Jigius\LittleSweetPods\App\Pods\Language;
-use Jigius\LittleSweetPods\Foundation\Persistence\RepositoryInterface;
-use Jigius\LittleSweetPods\Foundation\PrinterInterface;
-use Jigius\LittleSweetPods\App\Pods\Book as Vanilla;
+use Jigius\LittleSweetPods\Foundation as F;
+use LogicException;
 
+/**
+ * Book-entity with capable of lazy loading from the persistence layer into Db
+ */
 final class EntLazyBook implements EntityInterface
 {
 	/**
-	 * @var RepositoryInterface
+	 * @var PrinterEntityInterface
 	 */
-	private RepositoryInterface $r;
+	private PrinterEntityInterface $p;
 	/**
 	 * @var EntityInterface
 	 */
@@ -25,13 +27,14 @@ final class EntLazyBook implements EntityInterface
 	private bool $loaded;
 
 	/**
+	 * Cntr
 	 * @param EntityInterface $entity
-	 * @param RepositoryInterface $r
+	 * @param PrinterEntityInterface $p
 	 */
-	public function __construct(EntityInterface $entity, RepositoryInterface $r)
+	public function __construct(EntityInterface $entity, PrinterEntityInterface $p)
 	{
 		$this->original = $entity;
-		$this->r = $r;
+		$this->p = $p;
 		$this->loaded = false;
 	}
 
@@ -81,7 +84,7 @@ final class EntLazyBook implements EntityInterface
 	/**
 	 * @inheritDoc
 	 */
-	public function withLanguage(Language\LanguageInterface $lang): Vanilla\EntityInterface
+	public function withLanguage(Language\EntityInterface $lang): EntityInterface
 	{
 		if (!$this->loaded) {
 			return $this->loaded()->withLanguage($lang);
@@ -114,7 +117,7 @@ final class EntLazyBook implements EntityInterface
 	/**
 	 * @inheritDoc
 	 */
-	public function withTitle(string $title): Vanilla\EntityInterface
+	public function withTitle(string $title): EntityInterface
 	{
 		if (!$this->loaded) {
 			return $this->loaded()->withTitle($title);
@@ -155,7 +158,7 @@ final class EntLazyBook implements EntityInterface
 	/**
 	 * @inheritDoc
 	 */
-	public function printed(PrinterInterface $p)
+	public function printed(F\PrinterInterface $p)
 	{
 		if (!$this->loaded) {
 			return $this->loaded()->printed($p);
@@ -191,19 +194,29 @@ final class EntLazyBook implements EntityInterface
 	 */
 	public function blueprinted(): self
 	{
-		$that = new self($this->original, $this->r);
+		$that = new self($this->original, $this->p);
 		$that->loaded = $this->loaded;
 		return $that;
 	}
 
 	/**
-	 * loads data for the entity from the persistence layer
-	 * @return $this
+	 * Loads data for the entity from the persistence layer
+	 * @return EntLazyBook
+	 * @throws LogicException
 	 */
 	private function loaded(): self
 	{
-		// FIXME!!!
-		return $this;
+		if ($this->loaded) {
+			throw new LogicException("already loaded");
+		}
+		$that = $this->blueprinted();
+		$that
+			->original =
+				$this
+					->p
+					->with('blank', $this->original)
+					->finished();
+		$that->loaded = true;
+		return $that;
 	}
-
 }

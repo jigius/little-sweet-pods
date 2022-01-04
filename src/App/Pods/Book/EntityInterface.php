@@ -47,8 +47,8 @@ interface EntityInterface extends
 
 	/**
 	 * Defines book's language
-	 * @param Language\LanguageInterface $lang
+	 * @param Language\EntityInterface $lang
 	 * @return EntityInterface
 	 */
-	public function withLanguage(Language\LanguageInterface $lang): EntityInterface;
+	public function withLanguage(Language\EntityInterface $lang): EntityInterface;
 }
