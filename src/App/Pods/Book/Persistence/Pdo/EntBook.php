@@ -3,7 +3,7 @@
 namespace Jigius\LittleSweetPods\App\Pods\Book\Persistence\Pdo;
 
 use DateTimeInterface;
-use Jigius\LittleSweetPods\App\Pods\Book as Vanilla;
+use Jigius\LittleSweetPods\App\Pods\Author;
 use Jigius\LittleSweetPods\App\Pods\Language;
 use Jigius\LittleSweetPods\Foundation\PrinterInterface;
 use Jigius\LittleSweetPods\Illuminate\ArrayMedia;
@@ -11,6 +11,7 @@ use Jigius\LittleSweetPods\Illuminate\PrnWithSuppressedFinished;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
+use LogicException;
 
 /**
  * Book-entity with persistence into Db capable
@@ -18,17 +19,12 @@ use Exception;
 final class EntBook implements EntityInterface
 {
 	/**
-	 * @var Vanilla\EntityInterface
-	 */
-	private Vanilla\EntityInterface $original;
-	/**
 	 * @var array
 	 */
 	private array $i;
 
-	public function __construct(Vanilla\EntityInterface $book)
+	public function __construct()
 	{
-		$this->original = $book;
 		$this->i = [
 			'persisted' => false
 		];
@@ -36,28 +32,36 @@ final class EntBook implements EntityInterface
 
 	/**
 	 * @inheritDoc
+     * @throws LogicException
 	 */
-	public function id(): int
-	{
-		return $this->original->id();
-	}
+    public function id(): int
+    {
+        if (!isset($this->i['id'])) {
+            throw new LogicException("not defined");
+        }
+        return $this->i['id'];
+    }
 
 	/**
 	 * @inheritDoc
 	 */
 	public function withId(int $id): self
 	{
-		$that = $this->blueprinted();
-		$that->original = $this->original->withId($id);
-		return $that;
+        $that = $this->blueprinted();
+        $that->i['id'] = $id;
+        return $that;
 	}
 
 	/**
 	 * @inheritDoc
+     * @throws LogicException
 	 */
 	public function isbn(): string
 	{
-		return $this->original->isbn();
+        if (!isset($this->i['isbn'])) {
+            throw new LogicException("not defined");
+        }
+        return $this->i['isbn'];
 	}
 
 	/**
@@ -65,17 +69,21 @@ final class EntBook implements EntityInterface
 	 */
 	public function withIsbn(string $isbn): self
 	{
-		$that = $this->blueprinted();
-		$that->original = $this->original->withIsbn($isbn);
-		return $that;
+        $that = $this->blueprinted();
+        $that->i['isbn'] = $isbn;
+        return $that;
 	}
 
 	/**
 	 * @inheritDoc
+     * @throws LogicException
 	 */
 	public function title(): string
 	{
-		return $this->original->title();
+        if (!isset($this->i['title'])) {
+            throw new LogicException("not defined");
+        }
+        return $this->i['title'];
 	}
 
 	/**
@@ -83,17 +91,21 @@ final class EntBook implements EntityInterface
 	 */
 	public function withTitle(string $title): self
 	{
-		$that = $this->blueprinted();
-		$that->original = $this->original->withTitle($title);
-		return $that;
+        $that = $this->blueprinted();
+        $that->i['title'] = $title;
+        return $that;
 	}
 
 	/**
 	 * @inheritDoc
+     * @throws LogicException
 	 */
 	public function published(): DateTimeInterface
 	{
-		return $this->original->published();
+        if (!isset($this->i['published'])) {
+            throw new LogicException("not defined");
+        }
+        return $this->i['published'];
 	}
 
 	/**
@@ -101,17 +113,21 @@ final class EntBook implements EntityInterface
 	 */
 	public function withPublished(DateTimeInterface $pub): self
 	{
-		$that = $this->blueprinted();
-		$that->original = $this->original->withPublished($pub);
-		return $that;
+        $that = $this->blueprinted();
+        $that->i['published'] = $pub;
+        return $that;
 	}
 
 	/**
 	 * @inheritDoc
+     * @throws LogicException
 	 */
 	public function language(): Language\EntityInterface
 	{
-		return $this->original->language();
+        if (!isset($this->i['language'])) {
+            throw new LogicException("not defined");
+        }
+        return $this->i['language'];
 	}
 
 	/**
@@ -119,26 +135,44 @@ final class EntBook implements EntityInterface
 	 */
 	public function withLanguage(Language\EntityInterface $lang): self
 	{
-		$that = $this->blueprinted();
-		$that->original = $this->original->withLanguage($lang);
-		return $that;
+        $that = $this->blueprinted();
+        $that->i['language'] = $lang;
+        return $that;
 	}
 
-	/**
+    /**
+     * @inheritDoc
+     * @throws LogicException
+     */
+    public function author(): Author\IteratorInterface
+    {
+        if (!isset($this->i['author'])) {
+            throw new LogicException("not defined");
+        }
+        return $this->i['author'];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withAuthor(Author\Persistence\Pdo\IteratorInterface $author): EntityInterface
+    {
+        $that = $this->blueprinted();
+        $that->i['author'] = $author;
+        return $that;
+    }
+
+    /**
 	 * @inheritDoc
 	 * @throws Exception
 	 */
 	public function printed(PrinterInterface $p)
 	{
 		$p =
-			$this
-				->original
-				->printed(
-					(new ArrayMedia($this->i))
-						->printed(
-							new PrnWithSuppressedFinished($p)
-						)
-				);
+            (new ArrayMedia($this->i))
+                ->printed(
+                    new PrnWithSuppressedFinished($p)
+                );
 		foreach (['created', 'changed'] as $prop) {
 			if (!isset($this->i[$prop])) {
 				$p = $p->with($prop, new DateTimeImmutable("now", new DateTimeZone("UTC")));
@@ -186,7 +220,7 @@ final class EntBook implements EntityInterface
 	 */
 	public function blueprinted(): self
 	{
-		$that = new self($this->original);
+		$that = new self();
 		$that->i = $this->i;
 		return $that;
 	}

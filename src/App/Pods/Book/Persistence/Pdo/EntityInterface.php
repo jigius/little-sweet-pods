@@ -3,8 +3,9 @@
 namespace Jigius\LittleSweetPods\App\Pods\Book\Persistence\Pdo;
 
 use Jigius\LittleSweetPods\App\Pods\Book as Vanilla;
-use DateTimeInterface;
 use Jigius\LittleSweetPods\App\Pods\Language;
+use Jigius\LittleSweetPods\App\Pods\Author;
+use DateTimeInterface;
 
 /**
  * Extends vanilla entity with data are value for db persistence layer
@@ -29,33 +30,45 @@ interface EntityInterface extends Vanilla\EntityInterface
 	 */
 	public function withPersisted(bool $flag): EntityInterface;
 
-	/**
-	 * @inheritDoc
-	 * @return EntityInterface
-	 */
+    /**
+     * Defines book's id
+     * @param int $id
+     * @return EntityInterface
+     */
 	public function withId(int $id): EntityInterface;
 
-	/**
-	 * @inheritDoc
-	 * @return EntityInterface
-	 */
+    /**
+     * Defines book's isbn
+     * @param string $isbn
+     * @return EntityInterface
+     */
 	public function withIsbn(string $isbn): EntityInterface;
 
-	/**
-	 * @inheritDoc
-	 * @return EntityInterface
-	 */
+    /**
+     * Defines book's lang
+     * @param Language\EntityInterface $lang
+     * @return EntityInterface
+     */
 	public function withLanguage(Language\EntityInterface $lang): EntityInterface;
 
-	/**
-	 * @inheritDoc
-	 * @return EntityInterface
-	 */
+    /**
+     * Defines when book was published
+     * @param DateTimeInterface $pub
+     * @return EntityInterface
+     */
 	public function withPublished(DateTimeInterface $pub): EntityInterface;
 
-	/**
-	 * @inheritDoc
-	 * @return EntityInterface
-	 */
+    /**
+     * Defines book's title
+     * @param string $title
+     * @return EntityInterface
+     */
 	public function withTitle(string $title): EntityInterface;
+
+    /**
+     * Defines book's author(s)
+     * @param Author\Persistence\Pdo\IteratorInterface $author
+     * @return EntityInterface
+     */
+    public function withAuthor(Author\Persistence\Pdo\IteratorInterface $author): EntityInterface;
 }

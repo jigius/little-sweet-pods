@@ -3,6 +3,7 @@
 namespace Jigius\LittleSweetPods\App\Pods\Book\Persistence\Pdo;
 
 use DateTimeInterface;
+use Jigius\LittleSweetPods\App\Pods\Author;
 use Jigius\LittleSweetPods\App\Pods\Language;
 use Jigius\LittleSweetPods\Foundation as F;
 use LogicException;
@@ -92,6 +93,17 @@ final class EntLazyBook implements EntityInterface
 		return $this->original->withLanguage($lang);
 	}
 
+    /**
+     * @inheritDoc
+     */
+    public function withAuthor(Author\Persistence\Pdo\IteratorInterface $author): EntityInterface
+    {
+        if (!$this->loaded) {
+            return $this->loaded()->withAuthor($author);
+        }
+        return $this->original->withAuthor($author);
+    }
+
 	/**
 	 * @inheritDoc
 	 */
@@ -155,7 +167,18 @@ final class EntLazyBook implements EntityInterface
 		return $this->original->language();
 	}
 
-	/**
+    /**
+     * @inheritDoc
+     */
+    public function author(): Author\IteratorInterface
+    {
+        if (!$this->loaded) {
+            return $this->loaded()->author();
+        }
+        return $this->original->author();
+    }
+
+    /**
 	 * @inheritDoc
 	 */
 	public function printed(F\PrinterInterface $p)

@@ -11,7 +11,7 @@ use DomainException;
 use LogicException;
 
 /**
- * Class PrnBookWithId
+ * Extracts (prints) book entity with specified ID from the persistence layer
  */
 final class PrnBookWithId implements Pdo\PrinterEntityInterface
 {
@@ -65,9 +65,7 @@ final class PrnBookWithId implements Pdo\PrinterEntityInterface
 		if (isset($i['language_id'])) {
 			$book = $book->withLanguage(
 				(new Language\Persistence\Pdo\EntLazyLanguage(
-					new Language\Persistence\Pdo\EntLanguage(
-						new Language\EntLanguage()
-					),
+					new Language\Persistence\Pdo\EntLanguage(),
 					new Language\Persistence\Pdo\Printer\PrnLanguageWithId($this->r)
 				))
 					->withId($i['language_id'])

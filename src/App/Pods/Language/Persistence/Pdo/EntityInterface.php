@@ -28,15 +28,17 @@ interface EntityInterface extends Vanilla\EntityInterface
 	 */
 	public function withPersisted(bool $flag): EntityInterface;
 
-	/**
-	 * @inheritDoc
-	 * @return EntityInterface
-	 */
-	public function withId(int $id): EntityInterface;
+    /**
+     * Defines language's id
+     * @param int $id
+     * @return EntityInterface
+     */
+    public function withId(int $id): EntityInterface;
 
-	/**
-	 * @inheritDoc
-	 * @return EntityInterface
-	 */
-	public function withName(string $name): EntityInterface;
+    /**
+     * Defines language's name
+     * @param string $name
+     * @return EntityInterface
+     */
+    public function withName(string $name): EntityInterface;
 }
