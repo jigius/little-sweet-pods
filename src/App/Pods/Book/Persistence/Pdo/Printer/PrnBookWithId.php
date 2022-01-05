@@ -4,11 +4,13 @@ namespace Jigius\LittleSweetPods\App\Pods\Book\Persistence\Pdo\Printer;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use Jigius\LittleSweetPods\App\Pods\Book\Persistence\Pdo\EntBook;
 use Jigius\LittleSweetPods\App\Pods\Language as Language;
 use Jigius\LittleSweetPods\App\Pods\Book\Persistence\Pdo;
 use Jigius\LittleSweetPods\Illuminate\Persistence\Pdo\RepositoryInterface;
 use DomainException;
 use LogicException;
+use Symfony\Component\Filesystem\Exception\InvalidArgumentException;
 
 /**
  * Extracts (prints) book entity with specified ID from the persistence layer
@@ -35,27 +37,33 @@ final class PrnBookWithId implements Pdo\PrinterEntityInterface
 
 	/**
 	 * @inheritDoc
-	 * @throws LogicException|DomainException
+	 * @throws LogicException|DomainException|InvalidArgumentException
 	 */
 	public function finished(): Pdo\EntityInterface
 	{
-		if (!isset($this->i['blank'])) {
-			throw new LogicException("blank is not defined");
-		}
-		if (!$this->i['blank'] instanceof Pdo\EntityInterface) {
-			throw new LogicException("type invalid");
-		}
+        if (!isset($this->i['id'])) {
+            throw new InvalidArgumentException("`id` is not defined");
+        }  elseif (!is_int($this->i['id'])) {
+            throw new LogicException("type invalid");
+        }
+        if (!isset($this->i['blank'])) {
+            $blank = new EntBook();
+        } elseif (!$this->i['blank'] instanceof Pdo\EntityInterface) {
+            throw new LogicException("type invalid");
+        } else {
+            $blank = $this->i['blank'];
+        }
 		$entities =
 			$this
 				->r
 				->executed(
-					new Pdo\Request\RqBookWithId($this->i['blank']->id())
+					new Pdo\Request\RqBookWithId($this->i['id'])
 				);
 		if ($entities->rowCount() === 0) {
 			throw new DomainException("data not found", 404);
 		}
 		$i = $entities->fetch(\PDO::FETCH_ASSOC);
-		$book = $this->i['blank'];
+		$book = $blank->withId($this->i['id']);
 		if (isset($i['title'])) {
 			$book = $book->withTitle($i['title']);
 		}

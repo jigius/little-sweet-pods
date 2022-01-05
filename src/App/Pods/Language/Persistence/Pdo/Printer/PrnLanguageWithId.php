@@ -8,9 +8,10 @@ use Jigius\LittleSweetPods\App\Pods\Language\Persistence\Pdo;
 use Jigius\LittleSweetPods\Illuminate\Persistence\Pdo\RepositoryInterface;
 use DomainException;
 use LogicException;
+use Symfony\Component\Filesystem\Exception\InvalidArgumentException;
 
 /**
- * Class PrnLanguageWithId
+ * Prints out a language entity have being fetched from the persistence layer by its ID
  */
 final class PrnLanguageWithId implements Pdo\PrinterEntityInterface
 {
@@ -34,34 +35,43 @@ final class PrnLanguageWithId implements Pdo\PrinterEntityInterface
 
 	/**
 	 * @inheritDoc
-	 * @throws LogicException|DomainException
+	 * @throws LogicException|DomainException|InvalidArgumentException
 	 */
 	public function finished(): Pdo\EntityInterface
 	{
+		if (!isset($this->i['id'])) {
+            throw new InvalidArgumentException("`id` is not defined");
+        }  elseif (!is_int($this->i['id'])) {
+            throw new LogicException("type invalid");
+        }
 		if (!isset($this->i['blank'])) {
-			throw new LogicException("blank is not defined");
-		}
-		if (!$this->i['blank'] instanceof Pdo\EntityInterface) {
+			$blank = new Pdo\EntLanguage();
+		} elseif (!$this->i['blank'] instanceof Pdo\EntityInterface) {
 			throw new LogicException("type invalid");
-		}
+		} else {
+            $blank = $this->i['blank'];
+        }
 		$entities =
 			$this
 				->r
 				->executed(
-					new Pdo\Request\RqLanguageWithId($this->i['blank']->id())
+					new Pdo\Request\RqLanguageWithId($this->i['id'])
 				);
 		if ($entities->rowCount() === 0) {
 			throw new DomainException("data not found", 404);
 		}
 		$i = $entities->fetch(\PDO::FETCH_ASSOC);
-		$book = $this->i['blank'];
+        $language = $blank->withId($this->i['id']);
 		if (isset($i['name'])) {
-			$book = $book->withName($i['name']);
+			$language = $language->withName($i['name']);
 		}
-		foreach(['published', 'created', 'changed'] as $field) {
+        if (isset($i['locale'])) {
+            $language = $language->withLocale($i['locale']);
+        }
+		foreach(['created', 'changed'] as $field) {
 			if (isset($i[$field])) {
-				$book =
-					$book
+				$language =
+					$language
 						->withPublished(
 							DateTimeImmutable::createFromFormat(
 								"Y-m-d H:i:s",
@@ -72,7 +82,7 @@ final class PrnLanguageWithId implements Pdo\PrinterEntityInterface
 
 			}
 		}
-		return $book->withPersisted(true);
+		return $language->withPersisted(true);
 	}
 
 	/**

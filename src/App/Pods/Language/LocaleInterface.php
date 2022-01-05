@@ -5,11 +5,11 @@ namespace Jigius\LittleSweetPods\App\Pods\Language;
 /**
  * language's title
  */
-interface NameInterface
+interface LocaleInterface
 {
 	/**
-	 * Returns language's name
+	 * Returns language's locale
 	 * @return string
 	 */
-	public function name(): string;
+	public function locale(): string;
 }

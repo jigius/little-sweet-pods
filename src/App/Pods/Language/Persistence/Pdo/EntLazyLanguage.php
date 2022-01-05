@@ -69,6 +69,17 @@ final class EntLazyLanguage implements EntityInterface
 		return $this->original->withName($name);
 	}
 
+    /**
+     * @inheritDoc
+     */
+    public function withLocale(string $locale): EntityInterface
+    {
+        if (!$this->loaded) {
+            return $this->loaded()->withLocale($locale);
+        }
+        return $this->original->withLocale($locale);
+    }
+
 	/**
 	 * @inheritDoc
 	 */
@@ -110,6 +121,17 @@ final class EntLazyLanguage implements EntityInterface
 		return $this->original->name();
 	}
 
+    /**
+     * @inheritDoc
+     */
+    public function locale(): string
+    {
+        if (!$this->loaded) {
+            return $this->loaded()->locale();
+        }
+        return $this->original->locale();
+    }
+
 	/**
 	 * @inheritDoc
 	 */
@@ -147,7 +169,7 @@ final class EntLazyLanguage implements EntityInterface
 			->original =
 				$this
 					->p
-					->with('blank', $this->original)
+					->with('id', $this->id())
 					->finished();
 		$that->loaded = true;
 		return $that;

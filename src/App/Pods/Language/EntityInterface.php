@@ -10,6 +10,7 @@ use Jigius\LittleSweetPods\Foundation\MediaInterface;
 interface EntityInterface extends
 	MediaInterface,
 	IdentificationInterface,
-	NameInterface
+	NameInterface,
+    LocaleInterface
 {
 }

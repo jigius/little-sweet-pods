@@ -63,12 +63,33 @@ final class EntLanguage implements EntityInterface
 	/**
 	 * @inheritDoc
 	 */
-	public function withName(string $name): self
+	public function withLocale(string $locale): self
 	{
+        $that = $this->blueprinted();
+        $that->i['locale'] = $locale;
+        return $that;
+	}
+
+    /**
+     * @inheritDoc
+     */
+    public function locale(): string
+    {
+        if (!isset($this->i['locale'])) {
+            throw new LogicException("not defined");
+        }
+        return $this->i['locale'];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withName(string $name): self
+    {
         $that = $this->blueprinted();
         $that->i['name'] = $name;
         return $that;
-	}
+    }
 
 	/**
 	 * @inheritDoc

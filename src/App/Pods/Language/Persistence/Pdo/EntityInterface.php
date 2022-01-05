@@ -41,4 +41,11 @@ interface EntityInterface extends Vanilla\EntityInterface
      * @return EntityInterface
      */
     public function withName(string $name): EntityInterface;
+
+    /**
+     * Defines language's locale
+     * @param string $locale
+     * @return EntityInterface
+     */
+    public function withLocale(string $locale): EntityInterface;
 }
