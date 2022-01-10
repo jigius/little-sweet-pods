@@ -1,25 +1,29 @@
 {
-    "name": "jigius/little-sweet-pods",
-    "description": "A scaffold for entities that have been persisted via using Repository pattern",
-    "type": "library",
-    "license": "MIT",
-    "autoload": {
-        "psr-4": {
-            "Jigius\\LittleSweetPods\\": "src/"
-        }
+  "name": "jigius/little-sweet-pods",
+  "description": "A scaffold for entities that have been persisted via using Repository pattern",
+  "type": "library",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Jigius\\LittleSweetPods\\": "src/"
     },
-    "authors": [
-        {
-            "name": "jigius",
-            "email": "jigius@gmail.com"
-        }
-    ],
-    "minimum-stability": "dev",
-    "require": {
-      "ext-pdo": "*"
-    },
-    "require-dev": {
-        "fakerphp/faker": "1.17.x-dev",
-        "robmorgan/phinx": "dev-master"
+    "files": [
+      "debug.php"
+    ]
+  },
+  "authors": [
+    {
+      "name": "jigius",
+      "email": "jigius@gmail.com"
     }
+  ],
+  "minimum-stability": "dev",
+  "require": {
+    "ext-pdo": "*"
+  },
+  "require-dev": {
+    "fakerphp/faker": "1.17.x-dev",
+    "robmorgan/phinx": "dev-master",
+    "symfony/var-dumper": "5.4.x-dev"
+  }
 }
