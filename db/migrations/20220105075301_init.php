@@ -18,7 +18,8 @@ final class Init extends AbstractMigration
             ->addColumn('published', 'datetime')
             ->addColumn('language_id', 'integer')
             ->addColumn('created', 'datetime', ['default' => 'CURRENT_TIMESTAMP'])
-            ->addColumn('changed', 'datetime', ['update' => 'CURRENT_TIMESTAMP'])
+            ->addColumn('changed', 'datetime', ['default' => 'CURRENT_TIMESTAMP', 'update' => 'CURRENT_TIMESTAMP'])
+            ->addIndex(['isbn'], ['name' => 'i_isbn', 'unique' => true])
             ->create();
         $this
             ->table('language', ['id' => false, 'primary_key' => ['language_id']])
@@ -26,7 +27,7 @@ final class Init extends AbstractMigration
             ->addColumn('name', 'string', ['limit' => 100])
             ->addColumn('locale', 'char', ['limit' => 16])
             ->addColumn('created', 'datetime', ['default' => 'CURRENT_TIMESTAMP'])
-            ->addColumn('changed', 'datetime', ['update' => 'CURRENT_TIMESTAMP'])
+            ->addColumn('changed', 'datetime', ['default' => 'CURRENT_TIMESTAMP', 'update' => 'CURRENT_TIMESTAMP'])
             ->addIndex(['locale'], ['name' => 'i_locale', 'unique' => true])
             ->create();
         $this
@@ -36,7 +37,7 @@ final class Init extends AbstractMigration
             ->addColumn('last_name', 'string', ['limit' => 100])
             ->addColumn('email', 'string', ['limit' => 100])
             ->addColumn('created', 'datetime', ['default' => 'CURRENT_TIMESTAMP'])
-            ->addColumn('changed', 'datetime', ['update' => 'CURRENT_TIMESTAMP'])
+            ->addColumn('changed', 'datetime', ['default' => 'CURRENT_TIMESTAMP', 'update' => 'CURRENT_TIMESTAMP'])
             ->create();
         $this
             ->table('book_author')
