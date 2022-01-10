@@ -68,20 +68,30 @@ final class PrnLanguageWithId implements Pdo\PrinterEntityInterface
         if (isset($i['locale'])) {
             $language = $language->withLocale($i['locale']);
         }
-		foreach(['created', 'changed'] as $field) {
-			if (isset($i[$field])) {
-				$language =
-					$language
-						->withPublished(
-							DateTimeImmutable::createFromFormat(
-								"Y-m-d H:i:s",
-								$i[$field],
-								new DateTimeZone("UTC")
-							)
-						);
+        if (isset($i['created'])) {
+            $language =
+                $language
+                    ->withCreated(
+                        DateTimeImmutable::createFromFormat(
+                            "Y-m-d H:i:s",
+                            $i['created'],
+                            new DateTimeZone("UTC")
+                        )
+                    );
 
-			}
-		}
+        }
+        if (isset($i['changed'])) {
+            $language =
+                $language
+                    ->withChanged(
+                        DateTimeImmutable::createFromFormat(
+                            "Y-m-d H:i:s",
+                            $i['changed'],
+                            new DateTimeZone("UTC")
+                        )
+                    );
+
+        }
 		return $language->withPersisted(true);
 	}
 

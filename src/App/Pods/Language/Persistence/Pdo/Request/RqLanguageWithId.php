@@ -34,7 +34,7 @@ final class RqLanguageWithId implements RequestInterface
 			"SELECT",
 				"*",
 			"FROM",
-				"`languages`",
+				"`language`",
 			"WHERE",
 				"`language_id`=:id"
 		];

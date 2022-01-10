@@ -8,7 +8,7 @@ use DateTimeInterface;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
-use LogicException;
+use DomainException;
 
 /**
  * Language-entity with persistence into Db capable
@@ -29,12 +29,12 @@ final class EntLanguage implements EntityInterface
 
     /**
      * @inheritDoc
-     * @throws LogicException
+     * @throws DomainException
      */
     public function id(): int
     {
         if (!isset($this->i['id'])) {
-            throw new LogicException("not defined");
+            throw new DomainException("not defined", 404);
         }
         return $this->i['id'];
     }
@@ -51,11 +51,12 @@ final class EntLanguage implements EntityInterface
 
 	/**
 	 * @inheritDoc
+     * @throws DomainException
 	 */
 	public function name(): string
 	{
         if (!isset($this->i['name'])) {
-            throw new LogicException("not defined");
+            throw new DomainException("not defined", 404);
         }
         return $this->i['name'];
 	}
@@ -72,11 +73,12 @@ final class EntLanguage implements EntityInterface
 
     /**
      * @inheritDoc
+     * @throws DomainException
      */
     public function locale(): string
     {
         if (!isset($this->i['locale'])) {
-            throw new LogicException("not defined");
+            throw new DomainException("not defined", 404);
         }
         return $this->i['locale'];
     }

@@ -11,7 +11,7 @@ use Jigius\LittleSweetPods\Illuminate\PrnWithSuppressedFinished;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
-use LogicException;
+use DomainException;
 
 /**
  * Book-entity with persistence into Db capable
@@ -32,12 +32,12 @@ final class EntBook implements EntityInterface
 
 	/**
 	 * @inheritDoc
-     * @throws LogicException
+     * @throws DomainException
 	 */
     public function id(): int
     {
         if (!isset($this->i['id'])) {
-            throw new LogicException("not defined");
+            throw new DomainException("not defined", 404);
         }
         return $this->i['id'];
     }
@@ -54,12 +54,12 @@ final class EntBook implements EntityInterface
 
 	/**
 	 * @inheritDoc
-     * @throws LogicException
+     * @throws DomainException
 	 */
 	public function isbn(): string
 	{
         if (!isset($this->i['isbn'])) {
-            throw new LogicException("not defined");
+            throw new DomainException("not defined", 404);
         }
         return $this->i['isbn'];
 	}
@@ -76,12 +76,12 @@ final class EntBook implements EntityInterface
 
 	/**
 	 * @inheritDoc
-     * @throws LogicException
+     * @throws DomainException
 	 */
 	public function title(): string
 	{
         if (!isset($this->i['title'])) {
-            throw new LogicException("not defined");
+            throw new DomainException("not defined", 404);
         }
         return $this->i['title'];
 	}
@@ -98,12 +98,12 @@ final class EntBook implements EntityInterface
 
 	/**
 	 * @inheritDoc
-     * @throws LogicException
+     * @throws DomainException
 	 */
 	public function published(): DateTimeInterface
 	{
         if (!isset($this->i['published'])) {
-            throw new LogicException("not defined");
+            throw new DomainException("not defined", 404);
         }
         return $this->i['published'];
 	}
@@ -120,12 +120,12 @@ final class EntBook implements EntityInterface
 
 	/**
 	 * @inheritDoc
-     * @throws LogicException
+     * @throws DomainException
 	 */
 	public function language(): Language\EntityInterface
 	{
         if (!isset($this->i['language'])) {
-            throw new LogicException("not defined");
+            throw new DomainException("not defined", 404);
         }
         return $this->i['language'];
 	}
@@ -142,12 +142,12 @@ final class EntBook implements EntityInterface
 
     /**
      * @inheritDoc
-     * @throws LogicException
+     * @throws DomainException
      */
     public function author(): Author\IteratorInterface
     {
         if (!isset($this->i['author'])) {
-            throw new LogicException("not defined");
+            throw new DomainException("not defined", 404);
         }
         return $this->i['author'];
     }

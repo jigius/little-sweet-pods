@@ -5,6 +5,7 @@ namespace Jigius\LittleSweetPods\App\Pods\Language\Persistence\Pdo;
 use DateTimeInterface;
 use Jigius\LittleSweetPods\Foundation as F;
 use LogicException;
+use DomainException;
 
 /**
  * Language-entity with capable of lazy loading from the persistence layer into Db
@@ -20,21 +21,28 @@ final class EntLazyLanguage implements EntityInterface
 	 */
 	private EntityInterface $original;
 	/**
-	 * Signs if the entity has been loaded from persisted layer or not
-	 * @var false
+	 * Signs if the entity has been loaded from the persistence layer or not
+	 * @var bool
 	 */
 	private bool $loaded;
+    /**
+     * Defines if the entity has to be loaded before it will be printed
+     * @var bool
+     */
+    private bool $autoload;
 
-	/**
-	 * Cntr
-	 * @param EntityInterface $entity
-	 * @param PrinterEntityInterface $p
-	 */
-	public function __construct(EntityInterface $entity, PrinterEntityInterface $p)
-	{
+    /**
+     * Cntr
+     * @param EntityInterface $entity
+     * @param PrinterEntityInterface $p
+     * @param bool $loadBeforePrinted Defines if the entity has to be loaded before it will be printed
+     */
+	public function __construct(EntityInterface $entity, PrinterEntityInterface $p, bool $loadBeforePrinted = false)
+    {
 		$this->original = $entity;
 		$this->p = $p;
 		$this->loaded = false;
+        $this->autoload = $loadBeforePrinted;
 	}
 
 	/**
@@ -63,10 +71,9 @@ final class EntLazyLanguage implements EntityInterface
 	 */
 	public function withName(string $name): EntityInterface
 	{
-		if (!$this->loaded) {
-			return $this->loaded()->withName($name);
-		}
-		return $this->original->withName($name);
+		$that = $this->blueprinted();
+		$that->original = $this->original->withName($name);
+        return $that;
 	}
 
     /**
@@ -74,10 +81,9 @@ final class EntLazyLanguage implements EntityInterface
      */
     public function withLocale(string $locale): EntityInterface
     {
-        if (!$this->loaded) {
-            return $this->loaded()->withLocale($locale);
-        }
-        return $this->original->withLocale($locale);
+        $that = $this->blueprinted();
+        $that->original = $this->original->withLocale($locale);
+        return $that;
     }
 
 	/**
@@ -85,10 +91,9 @@ final class EntLazyLanguage implements EntityInterface
 	 */
 	public function withCreated(DateTimeInterface $dt): EntityInterface
 	{
-		if (!$this->loaded) {
-			return $this->loaded()->withCreated($dt);
-		}
-		return $this->original->withCreated($dt);
+        $that = $this->blueprinted();
+        $that->original = $this->original->withCreated($dt);
+        return $that;
 	}
 
 	/**
@@ -96,10 +101,9 @@ final class EntLazyLanguage implements EntityInterface
 	 */
 	public function withChanged(DateTimeInterface $dt): EntityInterface
 	{
-		if (!$this->loaded) {
-			return $this->loaded()->withChanged($dt);
-		}
-		return $this->original->withChanged($dt);
+        $that = $this->blueprinted();
+        $that->original = $this->original->withChanged($dt);
+        return $that;
 	}
 
 	/**
@@ -115,21 +119,30 @@ final class EntLazyLanguage implements EntityInterface
 	 */
 	public function name(): string
 	{
-		if (!$this->loaded) {
-			return $this->loaded()->name();
-		}
-		return $this->original->name();
+        try {
+            return $this->original->name();
+        } catch (DomainException $ex) {
+            if ($ex->getCode() === 404 && !$this->loaded) {
+                return $this->loaded()->name();
+            }
+            throw $ex;
+        }
 	}
 
     /**
      * @inheritDoc
+     * @throws DomainException
      */
     public function locale(): string
     {
-        if (!$this->loaded) {
-            return $this->loaded()->locale();
+        try {
+            return $this->original->locale();
+        } catch (DomainException $ex) {
+            if ($ex->getCode() === 404 && !$this->loaded) {
+                return $this->loaded()->locale();
+            }
+            throw $ex;
         }
-        return $this->original->locale();
     }
 
 	/**
@@ -137,7 +150,7 @@ final class EntLazyLanguage implements EntityInterface
 	 */
 	public function printed(F\PrinterInterface $p)
 	{
-		if (!$this->loaded) {
+		if (!$this->loaded && $this->autoload) {
 			return $this->loaded()->printed($p);
 		}
 		return $this->original->printed($p);
@@ -149,7 +162,7 @@ final class EntLazyLanguage implements EntityInterface
 	 */
 	public function blueprinted(): self
 	{
-		$that = new self($this->original, $this->p);
+		$that = new self($this->original, $this->p, $this->autoload);
 		$that->loaded = $this->loaded;
 		return $that;
 	}
@@ -172,6 +185,7 @@ final class EntLazyLanguage implements EntityInterface
 					->with('id', $this->id())
 					->finished();
 		$that->loaded = true;
+        echo "\nloaded!\n";
 		return $that;
 	}
 }

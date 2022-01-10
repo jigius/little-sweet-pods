@@ -7,6 +7,7 @@ use Jigius\LittleSweetPods\App\Pods\Author;
 use Jigius\LittleSweetPods\App\Pods\Language;
 use Jigius\LittleSweetPods\Foundation as F;
 use LogicException;
+use DomainException;
 
 /**
  * Book-entity with capable of lazy loading from the persistence layer into Db
@@ -22,21 +23,28 @@ final class EntLazyBook implements EntityInterface
 	 */
 	private EntityInterface $original;
 	/**
-	 * Signs if the entity has been loaded from persisted layer or not
-	 * @var false
+	 * Signs if the entity has been loaded from the persistence layer or not
+	 * @var bool
 	 */
 	private bool $loaded;
+    /**
+     * Defines if the entity has to be loaded before it will be printed
+     * @var bool
+     */
+    private bool $autoload;
 
-	/**
-	 * Cntr
-	 * @param EntityInterface $entity
-	 * @param PrinterEntityInterface $p
-	 */
-	public function __construct(EntityInterface $entity, PrinterEntityInterface $p)
+    /**
+     * Cntr
+     * @param EntityInterface $entity
+     * @param PrinterEntityInterface $p
+     * @param bool $loadBeforePrinted Defines if the entity has to be loaded before it will be printed
+     */
+	public function __construct(EntityInterface $entity, PrinterEntityInterface $p, bool $loadBeforePrinted = false)
 	{
 		$this->original = $entity;
 		$this->p = $p;
 		$this->loaded = false;
+        $this->autoload = $loadBeforePrinted;
 	}
 
 	/**
@@ -147,35 +155,50 @@ final class EntLazyBook implements EntityInterface
 
 	/**
 	 * @inheritDoc
+     * @throws DomainException
 	 */
 	public function isbn(): string
 	{
-		if (!$this->loaded) {
-			return $this->loaded()->isbn();
-		}
-		return $this->original->isbn();
+        try {
+            return $this->original->isbn();
+        } catch (DomainException $ex) {
+            if ($ex->getCode() === 404 && !$this->loaded) {
+                return $this->loaded()->isbn();
+            }
+            throw $ex;
+        }
 	}
 
 	/**
 	 * @inheritDoc
+     * @throws DomainException
 	 */
 	public function language(): Language\EntityInterface
 	{
-		if (!$this->loaded) {
-			return $this->loaded()->language();
-		}
-		return $this->original->language();
+        try {
+            return $this->original->language();
+        } catch (DomainException $ex) {
+            if ($ex->getCode() === 404 && !$this->loaded) {
+                return $this->loaded()->language();
+            }
+            throw $ex;
+        }
 	}
 
     /**
      * @inheritDoc
+     * @throws DomainException
      */
     public function author(): Author\IteratorInterface
     {
-        if (!$this->loaded) {
-            return $this->loaded()->author();
+        try {
+            return $this->original->author();
+        } catch (DomainException $ex) {
+            if ($ex->getCode() === 404 && !$this->loaded) {
+                return $this->loaded()->author();
+            }
+            throw $ex;
         }
-        return $this->original->author();
     }
 
     /**
@@ -183,7 +206,7 @@ final class EntLazyBook implements EntityInterface
 	 */
 	public function printed(F\PrinterInterface $p)
 	{
-		if (!$this->loaded) {
+		if (!$this->loaded && $this->autoload) {
 			return $this->loaded()->printed($p);
 		}
 		return $this->original->printed($p);
@@ -191,24 +214,34 @@ final class EntLazyBook implements EntityInterface
 
 	/**
 	 * @inheritDoc
+     * @throws DomainException
 	 */
 	public function published(): DateTimeInterface
 	{
-		if (!$this->loaded) {
-			return $this->loaded()->published();
-		}
-		return $this->original->published();
+        try {
+            return $this->original->published();
+        } catch (DomainException $ex) {
+            if ($ex->getCode() === 404 && !$this->loaded) {
+                return $this->loaded()->published();
+            }
+            throw $ex;
+        }
 	}
 
 	/**
 	 * @inheritDoc
+     * @throws DomainException
 	 */
 	public function title(): string
 	{
-		if (!$this->loaded) {
-			return $this->loaded()->title();
-		}
-		return $this->original->title();
+        try {
+            return $this->original->title();
+        } catch (DomainException $ex) {
+            if ($ex->getCode() === 404 && !$this->loaded) {
+                return $this->loaded()->title();
+            }
+            throw $ex;
+        }
 	}
 
 	/**
@@ -217,7 +250,7 @@ final class EntLazyBook implements EntityInterface
 	 */
 	public function blueprinted(): self
 	{
-		$that = new self($this->original, $this->p);
+		$that = new self($this->original, $this->p, $this->autoload);
 		$that->loaded = $this->loaded;
 		return $that;
 	}
@@ -237,7 +270,7 @@ final class EntLazyBook implements EntityInterface
 			->original =
 				$this
 					->p
-					->with('blank', $this->original)
+                    ->with('id', $this->id())
 					->finished();
 		$that->loaded = true;
 		return $that;
