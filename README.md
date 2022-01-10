@@ -1,2 +1,2 @@
 # little-sweet-pods
-A scaffold for entities that have been persisted via using Repository pattern
+An example of separating the business domain logic from a logic of its persistence

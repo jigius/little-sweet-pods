@@ -1,6 +1,6 @@
 {
   "name": "jigius/little-sweet-pods",
-  "description": "A scaffold for entities that have been persisted via using Repository pattern",
+  "description": "An example of separating the business domain logic from a logic of its persistence",
   "type": "library",
   "license": "MIT",
   "autoload": {
