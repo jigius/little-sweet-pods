@@ -7,6 +7,7 @@ use DateTimeZone;
 use Jigius\LittleSweetPods\App\Pods\Book\Persistence\Pdo\EntBook;
 use Jigius\LittleSweetPods\App\Pods\Language as Language;
 use Jigius\LittleSweetPods\App\Pods\Book\Persistence\Pdo;
+use Jigius\LittleSweetPods\Foundation\CacheInterface;
 use Jigius\LittleSweetPods\Illuminate\Persistence\Pdo\RepositoryInterface;
 use DomainException;
 use LogicException;
@@ -25,12 +26,17 @@ final class PrnBookWithId implements Pdo\PrinterEntityInterface
 	 * @var array
 	 */
 	private array $i;
+    /**
+     * @var CacheInterface
+     */
+    private CacheInterface $cache;
 
-	/**
+    /**
 	 * Cntr
 	 */
-	public function __construct(RepositoryInterface $r)
+	public function __construct(CacheInterface $cache, RepositoryInterface $r)
 	{
+        $this->cache = $cache;
 		$this->r = $r;
 		$this->i = [];
 	}
@@ -73,26 +79,49 @@ final class PrnBookWithId implements Pdo\PrinterEntityInterface
 		if (isset($i['language_id'])) {
 			$book = $book->withLanguage(
 				(new Language\Persistence\Pdo\EntLazyLanguage(
+                    $this->cache,
 					new Language\Persistence\Pdo\EntLanguage(),
 					new Language\Persistence\Pdo\Printer\PrnLanguageWithId($this->r)
 				))
 					->withId($i['language_id'])
 			);
 		}
-		foreach(['published', 'created', 'changed'] as $field) {
-			if (isset($i[$field])) {
-				$book =
-					$book
-						->withPublished(
-							DateTimeImmutable::createFromFormat(
-								"Y-m-d H:i:s",
-								$i[$field],
-								new DateTimeZone("UTC")
-							)
-						);
+        if (isset($i['published'])) {
+            $book =
+                $book
+                    ->withPublished(
+                        DateTimeImmutable::createFromFormat(
+                            "Y-m-d H:i:s",
+                            $i['published'],
+                            new DateTimeZone("UTC")
+                        )
+                    );
 
-			}
-		}
+        }
+        if (isset($i['created'])) {
+            $book =
+                $book
+                    ->withCreated(
+                        DateTimeImmutable::createFromFormat(
+                            "Y-m-d H:i:s",
+                            $i['created'],
+                            new DateTimeZone("UTC")
+                        )
+                    );
+
+        }
+        if (isset($i['changed'])) {
+            $book =
+                $book
+                    ->withChanged(
+                        DateTimeImmutable::createFromFormat(
+                            "Y-m-d H:i:s",
+                            $i['changed'],
+                            new DateTimeZone("UTC")
+                        )
+                    );
+
+        }
 		return $book->withPersisted(true);
 	}
 
@@ -112,7 +141,7 @@ final class PrnBookWithId implements Pdo\PrinterEntityInterface
 	 */
 	public function blueprinted(): self
 	{
-		$that = new self($this->r);
+		$that = new self($this->cache, $this->r);
 		$that->i = $this->i;
 		return $that;
 	}

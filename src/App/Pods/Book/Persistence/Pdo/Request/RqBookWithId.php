@@ -34,7 +34,7 @@ final class RqBookWithId implements RequestInterface
 			"SELECT",
 				"*",
 			"FROM",
-				"`books`",
+				"`book`",
 			"WHERE",
 				"`book_id`=:id"
 		];

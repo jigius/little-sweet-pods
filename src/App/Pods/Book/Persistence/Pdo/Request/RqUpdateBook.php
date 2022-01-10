@@ -102,7 +102,7 @@ final class RqUpdateBook implements RequestInterface
 					implode(
 						" ",
 						[
-							"UPDATE `books`",
+							"UPDATE `book`",
 							"SET",
 								implode(
 									",",

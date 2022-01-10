@@ -6,7 +6,6 @@ use DateTimeInterface;
 use Jigius\LittleSweetPods\App\Pods\Author;
 use Jigius\LittleSweetPods\App\Pods\Language;
 use Jigius\LittleSweetPods\Foundation as F;
-use LogicException;
 use DomainException;
 
 /**
@@ -22,28 +21,32 @@ final class EntLazyBook implements EntityInterface
 	 * @var EntityInterface
 	 */
 	private EntityInterface $original;
-	/**
-	 * Signs if the entity has been loaded from the persistence layer or not
-	 * @var bool
-	 */
-	private bool $loaded;
     /**
      * Defines if the entity has to be loaded before it will be printed
      * @var bool
      */
     private bool $autoload;
+    /**
+     * @var F\CacheInterface
+     */
+    private F\CacheInterface $cache;
 
     /**
      * Cntr
+     * @param F\CacheInterface $cache
      * @param EntityInterface $entity
      * @param PrinterEntityInterface $p
      * @param bool $loadBeforePrinted Defines if the entity has to be loaded before it will be printed
      */
-	public function __construct(EntityInterface $entity, PrinterEntityInterface $p, bool $loadBeforePrinted = false)
-	{
+	public function __construct(
+        F\CacheInterface $cache,
+        EntityInterface $entity,
+        PrinterEntityInterface $p,
+        bool $loadBeforePrinted = false
+    ) {
+		$this->cache = $cache;
 		$this->original = $entity;
 		$this->p = $p;
-		$this->loaded = false;
         $this->autoload = $loadBeforePrinted;
 	}
 
@@ -52,10 +55,9 @@ final class EntLazyBook implements EntityInterface
 	 */
 	public function withPersisted(bool $flag): EntityInterface
 	{
-		if (!$this->loaded) {
-			return $this->loaded()->withPersisted($flag);
-		}
-		return $this->original->withPersisted($flag);
+        $that = $this->blueprinted();
+        $that->original = $this->original->withPersisted($flag);
+        return $that;
 	}
 
 	/**
@@ -73,10 +75,9 @@ final class EntLazyBook implements EntityInterface
 	 */
 	public function withIsbn(string $isbn): EntityInterface
 	{
-		if (!$this->loaded) {
-			return $this->loaded()->withIsbn($isbn);
-		}
-		return $this->original->withIsbn($isbn);
+        $that = $this->blueprinted();
+        $that->original = $this->original->withIsbn($isbn);
+        return $that;
 	}
 
 	/**
@@ -84,10 +85,9 @@ final class EntLazyBook implements EntityInterface
 	 */
 	public function withPublished(DateTimeInterface $pub): EntityInterface
 	{
-		if (!$this->loaded) {
-			return $this->loaded()->withPublished($pub);
-		}
-		return $this->original->withPublished($pub);
+        $that = $this->blueprinted();
+        $that->original = $this->original->withPublished($pub);
+        return $that;
 	}
 
 	/**
@@ -95,10 +95,9 @@ final class EntLazyBook implements EntityInterface
 	 */
 	public function withLanguage(Language\EntityInterface $lang): EntityInterface
 	{
-		if (!$this->loaded) {
-			return $this->loaded()->withLanguage($lang);
-		}
-		return $this->original->withLanguage($lang);
+        $that = $this->blueprinted();
+        $that->original = $this->original->withLanguage($lang);
+        return $that;
 	}
 
     /**
@@ -106,10 +105,9 @@ final class EntLazyBook implements EntityInterface
      */
     public function withAuthor(Author\Persistence\Pdo\IteratorInterface $author): EntityInterface
     {
-        if (!$this->loaded) {
-            return $this->loaded()->withAuthor($author);
-        }
-        return $this->original->withAuthor($author);
+        $that = $this->blueprinted();
+        $that->original = $this->original->withAuthor($author);
+        return $that;
     }
 
 	/**
@@ -117,10 +115,9 @@ final class EntLazyBook implements EntityInterface
 	 */
 	public function withCreated(DateTimeInterface $dt): EntityInterface
 	{
-		if (!$this->loaded) {
-			return $this->loaded()->withCreated($dt);
-		}
-		return $this->original->withCreated($dt);
+        $that = $this->blueprinted();
+        $that->original = $this->original->withCreated($dt);
+        return $that;
 	}
 
 	/**
@@ -128,10 +125,9 @@ final class EntLazyBook implements EntityInterface
 	 */
 	public function withChanged(DateTimeInterface $dt): EntityInterface
 	{
-		if (!$this->loaded) {
-			return $this->loaded()->withChanged($dt);
-		}
-		return $this->original->withChanged($dt);
+        $that = $this->blueprinted();
+        $that->original = $this->original->withChanged($dt);
+        return $that;
 	}
 
 	/**
@@ -139,10 +135,9 @@ final class EntLazyBook implements EntityInterface
 	 */
 	public function withTitle(string $title): EntityInterface
 	{
-		if (!$this->loaded) {
-			return $this->loaded()->withTitle($title);
-		}
-		return $this->original->withTitle($title);
+        $that = $this->blueprinted();
+        $that->original = $this->original->withTitle($title);
+        return $that;
 	}
 
 	/**
@@ -162,8 +157,9 @@ final class EntLazyBook implements EntityInterface
         try {
             return $this->original->isbn();
         } catch (DomainException $ex) {
-            if ($ex->getCode() === 404 && !$this->loaded) {
-                return $this->loaded()->isbn();
+            if ($ex->getCode() === 404 && !$this->loaded()) {
+                $this->load();
+                return $this->original->isbn();
             }
             throw $ex;
         }
@@ -178,8 +174,9 @@ final class EntLazyBook implements EntityInterface
         try {
             return $this->original->language();
         } catch (DomainException $ex) {
-            if ($ex->getCode() === 404 && !$this->loaded) {
-                return $this->loaded()->language();
+            if ($ex->getCode() === 404 && !$this->loaded()) {
+                $this->load();
+                return $this->original->language();
             }
             throw $ex;
         }
@@ -194,8 +191,9 @@ final class EntLazyBook implements EntityInterface
         try {
             return $this->original->author();
         } catch (DomainException $ex) {
-            if ($ex->getCode() === 404 && !$this->loaded) {
-                return $this->loaded()->author();
+            if ($ex->getCode() === 404 && !$this->loaded()) {
+                $this->load();
+                return $this->original->author();
             }
             throw $ex;
         }
@@ -206,8 +204,8 @@ final class EntLazyBook implements EntityInterface
 	 */
 	public function printed(F\PrinterInterface $p)
 	{
-		if (!$this->loaded && $this->autoload) {
-			return $this->loaded()->printed($p);
+		if (!$this->cache->has($this->id()) && $this->autoload) {
+            $this->load();
 		}
 		return $this->original->printed($p);
 	}
@@ -221,8 +219,9 @@ final class EntLazyBook implements EntityInterface
         try {
             return $this->original->published();
         } catch (DomainException $ex) {
-            if ($ex->getCode() === 404 && !$this->loaded) {
-                return $this->loaded()->published();
+            if ($ex->getCode() === 404 && !$this->loaded()) {
+                $this->load();
+                return $this->original->published();
             }
             throw $ex;
         }
@@ -237,8 +236,9 @@ final class EntLazyBook implements EntityInterface
         try {
             return $this->original->title();
         } catch (DomainException $ex) {
-            if ($ex->getCode() === 404 && !$this->loaded) {
-                return $this->loaded()->title();
+            if ($ex->getCode() === 404 && !$this->loaded()) {
+                $this->load();
+                return $this->original->title();
             }
             throw $ex;
         }
@@ -250,29 +250,37 @@ final class EntLazyBook implements EntityInterface
 	 */
 	public function blueprinted(): self
 	{
-		$that = new self($this->original, $this->p, $this->autoload);
-		$that->loaded = $this->loaded;
-		return $that;
+		return new self($this->cache, $this->original, $this->p, $this->autoload);
 	}
 
-	/**
-	 * Loads data for the entity from the persistence layer
-	 * @return EntLazyBook
-	 * @throws LogicException
-	 */
-	private function loaded(): self
-	{
-		if ($this->loaded) {
-			throw new LogicException("already loaded");
-		}
-		$that = $this->blueprinted();
-		$that
-			->original =
-				$this
-					->p
-                    ->with('id', $this->id())
-					->finished();
-		$that->loaded = true;
-		return $that;
-	}
+    /**
+     * Signs if the original entity has been loaded from the persistence layer
+     * @return bool
+     */
+    private function loaded(): bool
+    {
+        return $this->cache->has($this->id());
+    }
+
+    /**
+     * Loads data for the entity from the persistence layer
+     * The instance is mutating!
+     * @return void
+     */
+    private function load(): void
+    {
+        $this->original =
+            $this
+                ->cache
+                ->fetch(
+                    $this->id(),
+                    function (): EntityInterface {
+                        return
+                            $this
+                                ->p
+                                ->with('id', $this->id())
+                                ->finished();
+                    }
+                );
+    }
 }

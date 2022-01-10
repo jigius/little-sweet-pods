@@ -4,7 +4,6 @@ namespace Jigius\LittleSweetPods\App\Pods\Language\Persistence\Pdo;
 
 use DateTimeInterface;
 use Jigius\LittleSweetPods\Foundation as F;
-use LogicException;
 use DomainException;
 
 /**
@@ -20,28 +19,32 @@ final class EntLazyLanguage implements EntityInterface
 	 * @var EntityInterface
 	 */
 	private EntityInterface $original;
-	/**
-	 * Signs if the entity has been loaded from the persistence layer or not
-	 * @var bool
-	 */
-	private bool $loaded;
     /**
      * Defines if the entity has to be loaded before it will be printed
      * @var bool
      */
     private bool $autoload;
+    /**
+     * @var F\CacheInterface
+     */
+    private F\CacheInterface $cache;
 
     /**
      * Cntr
+     * @param F\CacheInterface $cache
      * @param EntityInterface $entity
      * @param PrinterEntityInterface $p
      * @param bool $loadBeforePrinted Defines if the entity has to be loaded before it will be printed
      */
-	public function __construct(EntityInterface $entity, PrinterEntityInterface $p, bool $loadBeforePrinted = false)
-    {
+	public function __construct(
+        F\CacheInterface $cache,
+        EntityInterface $entity,
+        PrinterEntityInterface $p,
+        bool $loadBeforePrinted = false
+    ) {
+        $this->cache = $cache;
 		$this->original = $entity;
 		$this->p = $p;
-		$this->loaded = false;
         $this->autoload = $loadBeforePrinted;
 	}
 
@@ -50,10 +53,9 @@ final class EntLazyLanguage implements EntityInterface
 	 */
 	public function withPersisted(bool $flag): EntityInterface
 	{
-		if (!$this->loaded) {
-			return $this->loaded()->withPersisted($flag);
-		}
-		return $this->original->withPersisted($flag);
+        $that = $this->blueprinted();
+        $that->original = $this->original->withPersisted($flag);
+        return $that;
 	}
 
 	/**
@@ -122,8 +124,9 @@ final class EntLazyLanguage implements EntityInterface
         try {
             return $this->original->name();
         } catch (DomainException $ex) {
-            if ($ex->getCode() === 404 && !$this->loaded) {
-                return $this->loaded()->name();
+            if ($ex->getCode() === 404 && !$this->loaded()) {
+                $this->load();
+                return $this->original->name();
             }
             throw $ex;
         }
@@ -138,8 +141,9 @@ final class EntLazyLanguage implements EntityInterface
         try {
             return $this->original->locale();
         } catch (DomainException $ex) {
-            if ($ex->getCode() === 404 && !$this->loaded) {
-                return $this->loaded()->locale();
+            if ($ex->getCode() === 404 && !$this->loaded()) {
+                $this->load();
+                return $this->original->locale();
             }
             throw $ex;
         }
@@ -150,8 +154,8 @@ final class EntLazyLanguage implements EntityInterface
 	 */
 	public function printed(F\PrinterInterface $p)
 	{
-		if (!$this->loaded && $this->autoload) {
-			return $this->loaded()->printed($p);
+		if (!$this->loaded() && $this->autoload) {
+			$this->load();
 		}
 		return $this->original->printed($p);
 	}
@@ -162,30 +166,37 @@ final class EntLazyLanguage implements EntityInterface
 	 */
 	public function blueprinted(): self
 	{
-		$that = new self($this->original, $this->p, $this->autoload);
-		$that->loaded = $this->loaded;
-		return $that;
+		return new self($this->cache, $this->original, $this->p, $this->autoload);
 	}
+
+    /**
+     * Signs if the original entity has been loaded from the persistence layer
+     * @return bool
+     */
+    private function loaded(): bool
+    {
+        return $this->cache->has($this->id());
+    }
 
 	/**
 	 * Loads data for the entity from the persistence layer
-	 * @return EntLazyLanguage
-	 * @throws LogicException
+     * The instance is mutating!
+	 * @return void
 	 */
-	private function loaded(): self
+	private function load(): void
 	{
-		if ($this->loaded) {
-			throw new LogicException("already loaded");
-		}
-		$that = $this->blueprinted();
-		$that
-			->original =
-				$this
-					->p
-					->with('id', $this->id())
-					->finished();
-		$that->loaded = true;
-        echo "\nloaded!\n";
-		return $that;
+        $this->original =
+            $this
+                ->cache
+                ->fetch(
+                    $this->id(),
+                    function (): EntityInterface {
+                        return
+                            $this
+                                ->p
+                                ->with('id', $this->id())
+                                ->finished();
+                    }
+                );
 	}
 }

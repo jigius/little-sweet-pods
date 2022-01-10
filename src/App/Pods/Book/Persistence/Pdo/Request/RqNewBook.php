@@ -101,7 +101,7 @@ final class RqNewBook implements RequestInterface
 					implode(
 						" ",
 						[
-							"INSERT INTO `books`",
+							"INSERT INTO `book`",
 								"(",
 									implode(
 										",",
