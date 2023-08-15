@@ -6,10 +6,7 @@
   "autoload": {
     "psr-4": {
       "Jigius\\LittleSweetPods\\": "src/"
-    },
-    "files": [
-      "debug.php"
-    ]
+    }
   },
   "authors": [
     {
@@ -23,7 +20,6 @@
   },
   "require-dev": {
     "fakerphp/faker": "1.17.x-dev",
-    "robmorgan/phinx": "dev-master",
-    "symfony/var-dumper": "5.4.x-dev"
+    "robmorgan/phinx": "dev-master"
   }
 }
